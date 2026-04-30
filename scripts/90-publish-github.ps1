@@ -20,10 +20,16 @@ if ($LASTEXITCODE -ne 0) {
   throw "GitHub CLI is not authenticated. Run: gh auth login -h github.com"
 }
 
+$existingRemote = ""
+$remoteExitCode = 0
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 $existingRemote = git remote get-url origin 2>$null
+$remoteExitCode = $LASTEXITCODE
+$ErrorActionPreference = $previousErrorActionPreference
 
 if ($RemoteUrl) {
-  if ($LASTEXITCODE -eq 0 -and $existingRemote) {
+  if ($remoteExitCode -eq 0 -and $existingRemote) {
     git remote set-url origin $RemoteUrl
   } else {
     git remote add origin $RemoteUrl
@@ -37,10 +43,9 @@ if ([string]::IsNullOrWhiteSpace($Owner)) {
   throw "Owner is required when RemoteUrl is not provided. Example: -Owner ElevenZhou -RepoName Jiqichushihua"
 }
 
-if ($existingRemote) {
+if ($remoteExitCode -eq 0 -and $existingRemote) {
   git push -u origin $Branch
   exit 0
 }
 
 gh repo create "$Owner/$RepoName" --public --source . --remote origin --push
-
