@@ -63,6 +63,34 @@ powershell -ExecutionPolicy Bypass -File .\bootstrap.ps1 -ConfigPath .\machine-c
 Windows机器初始化-claude-relay标准SOP.md
 ```
 
+## 发布到公开 GitHub 仓库
+
+本目录已经用 `.gitignore` 排除了安装包和敏感文件。发布前确认：
+
+```powershell
+git status --short --ignored
+```
+
+应该看到 `.exe/.msi/.zip` 等安装包是 `!!` ignored，不是 `A` staged。
+
+如果 GitHub CLI 未登录或 token 过期：
+
+```powershell
+gh auth login -h github.com
+```
+
+创建公开仓库并 push：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\90-publish-github.ps1 -Owner ElevenZhou -RepoName Jiqichushihua
+```
+
+如果远程仓库已经手动创建好：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\90-publish-github.ps1 -RemoteUrl https://github.com/ElevenZhou/Jiqichushihua.git
+```
+
 ## 需要配合拉取的另外两个库
 
 建议新机器最终准备三个库/目录：
