@@ -1,0 +1,31 @@
+# Local installer binaries. Keep them on the machine or publish as release assets, not in git.
+*.exe
+*.msi
+*.zip
+*.7z
+*.rar
+*.iso
+
+# Secrets and machine-local config.
+.env
+*.env
+*.secret
+*.key
+*.pem
+frpc.toml
+init.json
+feishu-config.ps1
+machine-config.ps1
+
+# Logs and runtime output.
+logs/
+*.log
+*.tmp
+*.bak
+
+# Editor/system noise.
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
