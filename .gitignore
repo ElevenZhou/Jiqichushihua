@@ -1,9 +1,4 @@
-# Local installer binaries. Keep them on the machine or publish as release assets, not in git.
-*.exe
-*.msi
-*.zip
-*.7z
-*.rar
+# Installer binaries are intentionally tracked with Git LFS for offline bootstrap.
 *.iso
 
 # Secrets and machine-local config.
@@ -28,4 +23,3 @@ logs/
 .idea/
 Thumbs.db
 desktop.ini
-

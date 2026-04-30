@@ -2,7 +2,7 @@
 
 本目录用于保存新 Windows 机器接入 `claude-relay-service` 集群的标准化资料。
 
-这个目录可以作为公开 Git 仓库使用。公开仓库只提交文档、脚本、模板和安装清单；不要提交安装包二进制、真实 token、webhook、密码、`.env`、`init.json`、`frpc.toml`。
+这个目录可以作为公开 Git 仓库使用。仓库提交文档、脚本、模板、安装清单和离线安装包；安装包使用 Git LFS 管理。不要提交真实 token、webhook、密码、`.env`、`init.json`、`frpc.toml`。
 
 适用目标：
 
@@ -21,6 +21,7 @@
 | `scripts/` | 分步骤自动化脚本 |
 | `templates/machine-config.example.ps1` | 机器配置模板 |
 | `manifests/required-installers.md` | 安装包和工具清单 |
+| `.gitattributes` | Git LFS 规则，用于提交 `.exe/.msi/.zip/.7z/.rar` |
 
 ## 快速开始
 
@@ -65,13 +66,15 @@ Windows机器初始化-claude-relay标准SOP.md
 
 ## 发布到公开 GitHub 仓库
 
-本目录已经用 `.gitignore` 排除了安装包和敏感文件。发布前确认：
+本目录使用 Git LFS 提交安装包，`.gitignore` 只排除敏感文件和无关系统文件。发布前确认：
 
 ```powershell
+git lfs install
+git lfs ls-files
 git status --short --ignored
 ```
 
-应该看到 `.exe/.msi/.zip` 等安装包是 `!!` ignored，不是 `A` staged。
+应该看到安装包出现在 `git lfs ls-files` 中；不要看到 `.env`、`init.json`、`frpc.toml`、`feishu-config.ps1` 被 staged。
 
 如果 GitHub CLI 未登录或 token 过期：
 
@@ -153,4 +156,4 @@ Windows Terminal，可选
 3. 公网入口只走 60 机器 Caddy，不直接开放 frpc `remotePort`。
 4. 本目录可放初始化文档和安装包，但不要放真实 token、webhook、密码。
 5. 真实敏感配置应放在私密库，例如 `D:\secrets-backup`。
-6. 安装包二进制默认不提交到公开 Git；需要离线分发时，优先用 GitHub Releases 或单独网盘。
+6. 安装包二进制使用 Git LFS 提交，避免普通 GitHub 100MB 单文件限制。
