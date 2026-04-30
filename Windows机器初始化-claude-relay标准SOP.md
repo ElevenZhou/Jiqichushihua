@@ -87,21 +87,22 @@ remotePort:
 ```text
 1. 分配机器编号和 remotePort
 2. 安装基础软件
-3. 准备目录
-4. 拉取公开代码
-5. 安装依赖和构建后台
-6. 独立生成 .env 和 data\init.json
-7. 启动 Docker Redis
-8. 配置 frpc
-9. 准备 ops wrapper 和飞书配置
-10. 手动启动本地服务和 frpc
-11. 本地验收
-12. NSSM 服务化
-13. 飞书通知验收
-14. 交给 60 机器运维配置 Caddy/DNS
-15. 公网验收
-16. 登记到总调度机器
-17. 备份敏感配置到私密库
+3. 检查系统区域和网络出口风控
+4. 准备目录
+5. 拉取公开代码
+6. 安装依赖和构建后台
+7. 独立生成 .env 和 data\init.json
+8. 启动 Docker Redis
+9. 配置 frpc
+10. 准备 ops wrapper 和飞书配置
+11. 手动启动本地服务和 frpc
+12. 本地验收
+13. NSSM 服务化
+14. 飞书通知验收
+15. 交给 60 机器运维配置 Caddy/DNS
+16. 公网验收
+17. 登记到总调度机器
+18. 备份敏感配置到私密库
 ```
 
 任何一步失败，不进入下一步。
@@ -275,7 +276,49 @@ New-Item -ItemType Directory -Force D:\redis-data
 New-Item -ItemType Directory -Force D:\redis-backup
 ```
 
-## 4. 目录初始化流程
+## 4. 系统区域和网络出口风控检查
+
+N3 的经验需要写入新机器初始化标准流程：Windows 系统安装阶段曾选择“中国”区域，同时当时网络出口使用 IPv6。后续注册 Claude 后，账号很快被封。
+
+修正后的判断：IPv6 本身不是问题。如果 IPv6 出口足够干净、稳定，且注册、首次登录、长期运行环境一致，IPv6 也可以正常使用。真正需要关注的是出口质量、地区画像、系统区域和账号行为之间是否一致。
+
+新机器上线前必须检查：
+
+| 项目 | 要求 |
+| --- | --- |
+| Windows 区域 | 和账号注册、长期运行目标环境一致 |
+| 系统语言 | 尽量和使用环境一致，不要频繁切换 |
+| 时区 | 和节点规划一致，记录在机器登记信息里 |
+| 出口 IP 类型 | IPv4 或 IPv6 都可以，重点是干净、稳定 |
+| IPv6 出口 | 如果默认走 IPv6，确认归属、稳定性、历史滥用风险 |
+| 注册环境 | Claude 注册、首次登录、长期运行环境尽量一致 |
+| 变更记录 | 记录系统区域、出口 IP、注册时间、首次登录时间 |
+
+操作原则：
+
+1. 不要机械禁用 IPv6；干净 IPv6 可以使用。
+2. 不要在注册后短时间内频繁切换地区、IP 类型、出口 ASN 或设备环境。
+3. 如果 IPv6 出口质量不确定，先做账号注册和登录环境验证，再纳入生产节点。
+4. 发生封号或风控时，必须记录系统区域、语言、时区、IP 类型、出口地址、注册时间、首次登录时间和账号状态。
+5. 这条经验不证明“中国区域 + IPv6”就是唯一原因；它是后续初始化必须检查的风险项。
+
+记录模板：
+
+```text
+Windows 区域:
+系统语言:
+时区:
+出口 IP 类型: IPv4 / IPv6 / 双栈
+出口 IP:
+出口 ASN/服务商:
+Claude 注册时间:
+首次登录时间:
+注册和运行环境是否一致:
+账号状态:
+备注:
+```
+
+## 5. 目录初始化流程
 
 标准目录：
 
@@ -309,7 +352,7 @@ New-Item -ItemType Directory -Force D:\redis-backup
 | `D:\secrets-backup` | 私密配置备份 |
 | `D:\Jiqichushihua` | 初始化文档和安装包 |
 
-## 5. 代码拉取流程
+## 6. 代码拉取流程
 
 拉取公开代码：
 
@@ -343,7 +386,7 @@ git rev-parse HEAD
 git status --short
 ```
 
-## 6. 依赖安装和后台构建流程
+## 7. 依赖安装和后台构建流程
 
 安装服务依赖：
 
@@ -370,7 +413,7 @@ Test-Path D:\Projects\claude-workspace\claude-relay-service\node_modules
 Test-Path D:\Projects\claude-workspace\claude-relay-service\web\admin-spa\dist
 ```
 
-## 7. 独立配置生成流程
+## 8. 独立配置生成流程
 
 每台机器必须独立生成配置。
 
@@ -405,7 +448,7 @@ NODE_ENV=production
 3. `data\init.json` 包含后台管理员账号密码，必须妥善备份。
 4. 只有在明确做“整机克隆/迁移”时，才允许复制旧机器配置。
 
-## 8. Redis 初始化流程
+## 9. Redis 初始化流程
 
 启动 Docker Redis：
 
@@ -441,7 +484,7 @@ Redis 原则：
 4. 不把 Redis 端口开放到公网。
 5. `D:\redis-data` 可能包含业务数据和 token，按敏感数据处理。
 
-## 9. frpc 配置流程
+## 10. frpc 配置流程
 
 frpc 标准目录：
 
@@ -505,7 +548,7 @@ start proxy success
 | remote port already used | remotePort 冲突 | 换成规划表中的端口 |
 | connect timeout | 访问不到 60 机器 frps | 检查网络和 60 机器 frps |
 
-## 10. ops wrapper 和飞书流程
+## 11. ops wrapper 和飞书流程
 
 标准 ops 目录：
 
@@ -542,7 +585,7 @@ frpc 路径
 
 飞书配置属于敏感配置，只进入私密库，不进入公开仓库。
 
-## 11. 手动启动验收流程
+## 12. 手动启动验收流程
 
 先手动启动服务：
 
@@ -567,7 +610,7 @@ docker exec claude-redis redis-cli ping
 
 只有本地验收通过，才进入 NSSM 服务化。
 
-## 12. NSSM 服务化流程
+## 13. NSSM 服务化流程
 
 必须使用管理员 PowerShell。
 
@@ -619,7 +662,7 @@ sc.exe delete claude-relay-service
 sc.exe delete frpc
 ```
 
-## 13. 飞书通知验收流程
+## 14. 飞书通知验收流程
 
 NSSM 通过 wrapper 启动后，应收到：
 
@@ -647,7 +690,7 @@ webhook 是否过期
 secret 是否正确
 ```
 
-## 14. 60 机器交接流程
+## 15. 60 机器交接流程
 
 Windows 节点部署人只提供信息，不直接操作 60 机器。
 
@@ -681,7 +724,7 @@ curl.exe -i https://apiX.yumiai.art/health --max-time 20
 
 如果本地 health 正常但公网不通，优先排查 60 机器 Caddy/DNS/443/frps，不要在 Windows 节点上反复改服务。
 
-## 15. 总调度接管流程
+## 16. 总调度接管流程
 
 公网验收通过后，登记到总调度机器。
 
@@ -724,7 +767,7 @@ GET https://apiX.yumiai.art/health
 恢复动作: 标记可用，人工确认后接回
 ```
 
-## 16. 私密库备份流程
+## 17. 私密库备份流程
 
 新节点验收后，把敏感配置备份到私密库。
 
@@ -759,7 +802,7 @@ D:\redis-data
 3. 新机器普通上线不复制旧机器 `.env` 和 `init.json`。
 4. 迁移旧实例时才复制旧机器 `.env`、`init.json`、Redis dump。
 
-## 17. 日常运维流程
+## 18. 日常运维流程
 
 查看服务：
 
@@ -805,7 +848,7 @@ Get-Content D:\Projects\claude-workspace\claude-relay-service\logs\frpc-task.out
 Get-Content D:\Projects\claude-workspace\claude-relay-service\logs\frpc-task.err.log -Tail 100
 ```
 
-## 18. 代码更新流程
+## 19. 代码更新流程
 
 更新前：
 
@@ -856,7 +899,7 @@ curl.exe -i https://apiX.yumiai.art/health --max-time 20
 记录更新时间、commit、验证结果
 ```
 
-## 19. Redis 备份和恢复流程
+## 20. Redis 备份和恢复流程
 
 手动触发 Redis 保存：
 
@@ -890,7 +933,7 @@ Copy-Item D:\redis-data\dump.rdb D:\redis-backup\dump-YYYYMMDD-HHMMSS.rdb
 8. 总调度恢复接管
 ```
 
-## 20. 整机迁移流程
+## 21. 整机迁移流程
 
 迁移旧机器到新机器时，和普通新机上线不同。
 
@@ -928,7 +971,7 @@ ops wrapper
 2. 不能让两台机器同时使用同一个 frpc `name`。
 3. 迁移期间要有明确回滚点。
 
-## 21. 节点下线流程
+## 22. 节点下线流程
 
 下线前：
 
@@ -965,7 +1008,7 @@ sc.exe delete frpc
 负责人
 ```
 
-## 22. 故障分流流程
+## 23. 故障分流流程
 
 先判断故障在哪一层。
 
@@ -1033,7 +1076,7 @@ wrapper 是否真正由 NSSM 启动
 网络访问飞书 webhook 是否正常
 ```
 
-## 23. 最终验收清单
+## 24. 最终验收清单
 
 上线前逐项确认：
 
@@ -1041,6 +1084,9 @@ wrapper 是否真正由 NSSM 启动
 [ ] 机器编号已分配
 [ ] remotePort 已分配且唯一
 [ ] 公网域名已分配
+[ ] Windows 区域、语言、时区已记录
+[ ] 出口 IP 类型和出口质量已确认
+[ ] Claude 注册/首次登录/长期运行环境一致性已确认
 [ ] Git 可用
 [ ] Node.js 可用
 [ ] npm.cmd 可用
@@ -1067,7 +1113,7 @@ wrapper 是否真正由 NSSM 启动
 [ ] 未把 .env/init.json/token/webhook 放进公开仓库
 ```
 
-## 24. 禁止事项
+## 25. 禁止事项
 
 禁止：
 
@@ -1078,13 +1124,14 @@ wrapper 是否真正由 NSSM 启动
 把飞书 webhook/secret 写进公开仓库
 直接开放 remotePort 到公网
 新机器直接复用 N3 的 .env/init.json
+忽略 Windows 区域、时区、出口 IP 和账号注册环境一致性
 两台机器同时使用同一个 frpc name
 没有本地验收就安装 NSSM
 没有摘流量就更新生产节点
 没有备份就做迁移或下线
 ```
 
-## 25. 快速命令汇总
+## 26. 快速命令汇总
 
 环境检查：
 

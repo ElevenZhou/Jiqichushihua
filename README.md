@@ -112,21 +112,22 @@ powershell -ExecutionPolicy Bypass -File .\scripts\90-publish-github.ps1 -Remote
 2. 初始化安装包盘点。
 3. 必装运行环境。
 4. AI 自动化管理环境。
-5. 新 Windows 机器初始化。
-6. `claude-relay-service` 部署。
-7. Docker Redis 初始化。
-8. frpc 接入 60 机器。
-9. NSSM 服务化。
-10. 飞书通知。
-11. 60 机器交接。
-12. 总调度机器接管。
-13. 私密库备份。
-14. 日常运维。
-15. 代码更新。
-16. Redis 备份和恢复。
-17. 整机迁移。
-18. 节点下线。
-19. 故障分流。
+5. 系统区域、网络出口和账号注册环境风控。
+6. 新 Windows 机器初始化。
+7. `claude-relay-service` 部署。
+8. Docker Redis 初始化。
+9. frpc 接入 60 机器。
+10. NSSM 服务化。
+11. 飞书通知。
+12. 60 机器交接。
+13. 总调度机器接管。
+14. 私密库备份。
+15. 日常运维。
+16. 代码更新。
+17. Redis 备份和恢复。
+18. 整机迁移。
+19. 节点下线。
+20. 故障分流。
 
 当前目录已有安装包：
 
