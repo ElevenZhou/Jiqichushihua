@@ -112,7 +112,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\90-publish-github.ps1 -Remote
 2. 初始化安装包盘点。
 3. 必装运行环境。
 4. AI 自动化管理环境。
-5. 系统区域、网络出口和账号注册环境风控。
+5. Device setup region、网络出口和账号注册环境风控。
 6. 新 Windows 机器初始化。
 7. `claude-relay-service` 部署。
 8. Docker Redis 初始化。
